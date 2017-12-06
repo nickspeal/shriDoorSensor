@@ -10,13 +10,17 @@ tryingTimeSync = false
 
 function connectToWifi (onConnectCb)
   print("Connecting To Wifi...\n")
-  --connect to Access Point (DO save config to flash)
+  wifi.eventmon.register(wifi.eventmon.STA_CONNECTED, onConnectCb)
+  --connect to Access Point (TODO save config to flash so it doesnt need to be set each time?)
+  wifi.setmode(wifi.STATION, true)
   station_cfg={}
-  station_cfg.ssid="sidbh_airtel"
-  station_cfg.pwd="Aticates12=3"
+  --station_cfg.ssid="nick"
+  --station_cfg.pwd="sirisiri"
+  station_cfg.ssid="Papa"
+  station_cfg.pwd="tuktuk123"
   station_cfg.save=false -- TODO make this true
   wifi.sta.config(station_cfg)
-  wifi.eventmon.register(wifi.eventmon.STA_CONNECTED, onConnectCb)
+  print("connectToWifi function complete. Waiting for callbback")
 end
 
 function init()
@@ -84,8 +88,8 @@ function sendData()
     print("sending this data: ")
     print(json)
     TOKEN="A1E-VPavGWA9IgLsNgRPJ5zOUkuOvWp67j"
-    LABEL_DEVICE="poop-tag"
-    LABEL_VARIABLE="count"
+    LABEL_DEVICE="door-001"
+    LABEL_VARIABLE="state"
     endpoint = string.format("http://things.ubidots.com/api/v1.6/devices/%s/%s/values/?token=%s", 
     LABEL_DEVICE, LABEL_VARIABLE, TOKEN)
     http.post(
