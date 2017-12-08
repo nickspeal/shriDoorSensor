@@ -1,6 +1,6 @@
 dataList = {}
 cnt=0
-wifiConnected = false
+wifiConnected = true -- assume connected is true because init handles wifi.
 networkAvail = true
 lastState = nil
 pin=1
@@ -24,12 +24,12 @@ function connectToWifi (onConnectCb)
 end
 
 function init()
-  connectToWifi(
-    function()
-      wifiConnected = true
-      print("Wifi Connected...")
-    end
-  )
+--  connectToWifi(
+--    function()
+--      wifiConnected = true
+--      print("Wifi Connected...")
+--    end
+--  )
 
   -- SET UP GPIO PIN
   mode=gpio.INPUT
