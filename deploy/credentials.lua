@@ -1,3 +1,4 @@
+-- Variable Names must be caps!!!
 --SSID = "Papa"
 --PASSWORD = "tuktuk123"
 --SSID = "nick"
@@ -5,7 +6,7 @@
 SSID="AndroidAP"
 PASSWORD="tuktuk123"
 
-SENSOR_ID = "door-002"
+SENSOR_ID = "door-xxx"
 
 --Settings
 SAVE_WITHOUT_KNOWN_TIME = false -- Set to false to only save data if global timeSynced is true
