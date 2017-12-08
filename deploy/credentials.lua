@@ -1,9 +1,9 @@
 --SSID = "Papa"
 --PASSWORD = "tuktuk123"
-SSID = "nick"
-PASSWORD = "sirisiri"
---SSID="AndroidAP"
---password="tuktuk123"
+--SSID = "nick"
+--PASSWORD = "sirisiri"
+SSID="AndroidAP"
+PASSWORD="tuktuk123"
 
 SENSOR_ID = "door-002"
 
