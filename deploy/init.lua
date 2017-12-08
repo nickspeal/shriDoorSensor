@@ -1,7 +1,7 @@
 --
   -- Main Program. Runs automatically on start.
   -- Depends on global variables:
-  -- sendData
+  -- sendData, internetConnectedLED
 --
 
 --GLOBAL VARIABLES
@@ -14,6 +14,7 @@ timeSynced = false
 -- TODO should this be in uploadData? Seems kinda hidden though
 function onInternetConnect()
   print("Internet is connected!!")
+  internetConnectedLED()
   wifiConnected = true
   sendData() -- defined within uploadData
 end
@@ -26,11 +27,14 @@ function startup()
         file.close("init.lua")
         -- Global Configuration
         dofile("credentials.lua")
+        -- Define LED blink function
+        dofile("led.lua")
         -- Watch the sensor for door events and save this data:
         dofile("watchSensor.lua")
         -- Periodically upload the data to the internet (and ping also?)
         dofile("wifi.lua")
         dofile("uploadData.lua")
+
     end
 end
 

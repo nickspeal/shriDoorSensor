@@ -24,7 +24,7 @@ function logEvent(edge)
   else
     print("Door closed")
   end
-  -- TODO Flash LED
+  doorChangeLED()
 end
 
 function saveData(edge)
