@@ -8,28 +8,34 @@ gpio.mode(0, gpio.OUTPUT)
 gpio.write(0, gpio.HIGH)
 
 LED_PIN = 0
-state = false -- WIP state maintenance logic isn't quite right yet. WIP. For now assume previousState was always false (off)
+STEADY_STATE_ON = false -- WIP state maintenance logic isn't quite right yet. WIP. For now assume previousState was always false (off)
 
 
-function on()
+function onLED()
   gpio.write(LED_PIN, gpio.LOW)
 end
 
-function off()
+function offLED()
   gpio.write(LED_PIN, gpio.HIGH)
 end
 
 
 function blinkLED(duration, repeatCount) 
-  off()
+  offLED()
   for i = 1, repeatCount, 1 do
-    tmr.create():alarm((2 * i - 1) * duration, tmr.ALARM_SINGLE, on)
-    tmr.create():alarm(2 * i * duration, tmr.ALARM_SINGLE, off)
+    tmr.create():alarm((2 * i - 1) * duration, tmr.ALARM_SINGLE, onLED)
+    tmr.create():alarm(2 * i * duration, tmr.ALARM_SINGLE, offLED)
+  end
+  if STEADY_STATE_ON then
+    tmr.create():alarm(2 * repeatCount * duration, tmr.ALARM_SINGLE, onLED)
+  else
+    tmr.create():alarm(2 * repeatCount * duration, tmr.ALARM_SINGLE, offLED)
   end
 end
 
 function internetConnectedLED()
-  blinkLED(1000, 5)
+  STEADY_STATE_ON = true
+  onLED()
 end
 
 function doorChangeLED()
@@ -37,5 +43,6 @@ function doorChangeLED()
 end
 
 function internetDisconnectLED()
+  STEADY_STATE_ON = false
   blinkLED(200, 1)
 end

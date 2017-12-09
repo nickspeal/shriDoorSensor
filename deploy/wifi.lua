@@ -1,12 +1,11 @@
 --
   -- Periodically connects to wifi network & internet and calls callback on success
   -- Depends on global variables:
-  -- onInternetConnect, WIFI_SLEEP_TIME, wifiConnected
+  -- onInternetConnect, WIFI_SLEEP_TIME, wifiConnected, WIFI_CONNECT_MAX_ATTEMPTS
 --
 
 TIME_SYNC_WAIT_TIME = 5000 -- How long to wait before trying to time sync again, millis
 TIME_SYNC_MAX_ATTEMPTS = 10 -- Max number of attempts before giving up
-WIFI_CONNECT_MAX_ATTEMPTS = 15 -- was 75
 time_sync_count = 0
 disconnect_ct = 0
 WIFI_CONFIG = {
@@ -50,6 +49,7 @@ end
 
 onWifiDisconnect = function(T)
   print("\nDisconnected from WiFi with SSID: "..T.SSID)
+  internetDisconnectLED()
   wifiConnected = false
   
   if T.reason == wifi.eventmon.reason.ASSOC_LEAVE then
@@ -70,7 +70,6 @@ onWifiDisconnect = function(T)
   disconnect_ct = disconnect_ct + 1
   if disconnect_ct < WIFI_CONNECT_MAX_ATTEMPTS then
     print("Retrying connection...(attempt "..(disconnect_ct+1).." of "..WIFI_CONNECT_MAX_ATTEMPTS..")")
-    internetDisconnectLED()
   else
     wifi.sta.disconnect()
     print("Aborting connection to AP and resetting count!")

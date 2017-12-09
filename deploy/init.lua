@@ -20,6 +20,7 @@ function onInternetConnect()
 end
 
 function startup()
+    offLED()
     if file.open("init.lua") == nil then
         print("init.lua deleted or renamed. Application will not be run until you restart the device.")
     else
@@ -27,8 +28,6 @@ function startup()
         file.close("init.lua")
         -- Global Configuration
         dofile("credentials.lua")
-        -- Define LED blink function
-        dofile("led.lua")
         -- Watch the sensor for door events and save this data:
         dofile("watchSensor.lua")
         -- Save data to file, and provide a function for reading it back:
@@ -44,4 +43,7 @@ end
 print("\n\nDevice Started!")
 print("You have "..STARTUP_WAIT.." seconds to delete or replace the init.lua script before startup will continue.")
 print("Waiting...")
-  tmr.create():alarm(STARTUP_WAIT * 1000, tmr.ALARM_SINGLE, startup)
+-- Import LED functionality
+dofile("led.lua")
+onLED()
+tmr.create():alarm(STARTUP_WAIT * 1000, tmr.ALARM_SINGLE, startup)

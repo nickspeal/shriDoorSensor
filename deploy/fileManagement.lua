@@ -15,7 +15,7 @@
 --     Wacky order could come from stack style where low numbers are read first and written first
 --     Maybe could loop through list of files in reverse order, to mostly, but not perfectly, sovle the problem
 
-FILENAME_PREFIX = "data-"
+FILENAME_PREFIX = "saveddata-"
 FILENAME_EXTENSION = ".json"
 
 -- Pop the first N items of the datalist list, encode them as a json string, and return it.
