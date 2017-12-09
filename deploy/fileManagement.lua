@@ -1,7 +1,7 @@
 --
   -- File Management: Witing and Reading
   -- Depends on global variables:
-  -- dataList, MAX_ENCODED_DATA_LENGTH
+  -- dataList, MAX_ENCODED_DATA_LENGTH, FILE_SAVE_INTERVAL
 --
 
 -- datstructure 1b
@@ -85,3 +85,6 @@ function getFilenames()
   end
   return filenames
 end
+
+-- saveFile is called whenever the dataList fills up, but also periodically here to avoid data loss of a partial datalist during a power cycle
+tmr.create():alarm(FILE_SAVE_INTERVAL, tmr.ALARM_AUTO, saveFile)
