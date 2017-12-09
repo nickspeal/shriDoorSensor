@@ -1,7 +1,7 @@
 --
   -- Main Program. Runs automatically on start.
   -- Depends on global variables:
-  -- sendData, internetConnectedLED
+  -- syncWithInternet, internetConnectedLED
 --
 
 --GLOBAL VARIABLES
@@ -16,7 +16,7 @@ function onInternetConnect()
   print("Internet is connected!!")
   internetConnectedLED()
   wifiConnected = true
-  sendData() -- defined within uploadData
+  syncWithInternet() -- defined within uploadData
 end
 
 function startup()
@@ -31,6 +31,8 @@ function startup()
         dofile("led.lua")
         -- Watch the sensor for door events and save this data:
         dofile("watchSensor.lua")
+        -- Save data to file, and provide a function for reading it back:
+        dofile("fileManagement.lua")
         -- Periodically upload the data to the internet (and ping also?)
         dofile("wifi.lua")
         dofile("uploadData.lua")

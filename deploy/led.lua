@@ -1,3 +1,9 @@
+--
+  -- LED flashing utility functions. 
+  -- Depends on global variables:
+  -- 
+--
+
 gpio.mode(0, gpio.OUTPUT)
 gpio.write(0, gpio.HIGH)
 
@@ -28,4 +34,8 @@ end
 
 function doorChangeLED()
   blinkLED(100, 2)
+end
+
+function internetDisconnectLED()
+  blinkLED(200, 1)
 end

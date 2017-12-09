@@ -1,13 +1,12 @@
 --
   -- Read sensor open and close events, append to buffer
   -- Depends on global variables:
-  -- dataList, timeSynced, SAVE_WITHOUT_KNOWN_TIME, 
+  -- dataList, timeSynced, SAVE_WITHOUT_KNOWN_TIME, MAX_BUFFER_SIZE, DATA_SAVE_THRESHOLD, saveFile
 --
 
 eventId = 0 -- increment a counter with each rising/falling edge event to detect missed data
 lastState = nil
 GPIO_PIN = 1
-MAX_BUFFER_SIZE = 100 -- In one test, I ran out of memory after datalist had length 113 -- TODO measure in bytes not items. Also save to flash instead.
 
 function setupGPIO()
   mode = gpio.INPUT
@@ -47,6 +46,9 @@ function saveData(edge)
   if #dataList < MAX_BUFFER_SIZE then
     dataList[#dataList + 1] = data
     print("Added to datalist. Length is now "..#dataList)
+    if #dataList >= DATA_SAVE_THRESHOLD then
+      saveFile()
+    end
   else
     print("Maximum dataList size exceeded. This event was not saved. Datalist length is: "..#dataList)
   end

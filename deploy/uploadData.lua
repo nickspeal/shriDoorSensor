@@ -10,6 +10,7 @@ uploading = false -- don't try a subsequent upload if already uploading. Instead
 MAX_UPLOAD_ATTEMPTS = 10
 upload_trial_count = 0
 MAX_ENCODED_DATA_LENGTH = 6 -- Limit the number of datapoints to include in one request so that the JSON string doesn't run out of memory.
+currentFilename = nil
 
 --UBIDOTS
 TOKEN="A1E-VPavGWA9IgLsNgRPJ5zOUkuOvWp67j" -- TODO regenerate and keep out of public github!
@@ -23,70 +24,50 @@ endpoint = string.format(
 )
 
 function onDataSendAck(code, data)
-  uploading = false
   if code == 200 then
-    print("Data Upload Successful.")
+    print("Data Upload Successful. Deleting file "..currentFilename)
     upload_trial_count = 0
-    -- print(data)
-    -- Replace DataList array with only the tail of unsent data
-    unsentData = {}
-    for i = numDataPublished + 1, #dataList, 1 do
-      unsentData[#unsentData + 1] = dataList[i]
+    if currentFilename ~= nil then
+      file.remove(currentFilename)
     end
-    dataList = unsentData
-    if #dataList > 0 then
-      print("Some new data was accumulated while the last request was being sent. Calling sendData again.")
-      sendData()
-    else
-      print("dataList is empty. Disconnecting from wifi")
-      wifiDisconnect()
-    end
+    syncWithInternet()
   else
     print("HTTP request failed ", code, data)
     upload_trial_count = upload_trial_count + 1
     if upload_trial_count < MAX_UPLOAD_ATTEMPTS then
-      print("Trying again. Attempt #"..upload_trial_count)
-      sendData()
+      print("Trying again. Attempt #"..upload_trial_count.." of "..MAX_UPLOAD_ATTEMPTS)
+      syncWithInternet()
     end
   end
 end
 
-function sendData()
-  print("sendData called")
-  --TODO: handle if out of memory
-  --ok, json = pcall(sjson.encode, dataList)
-  if #dataList > 0 then
-    if #dataList > MAX_ENCODED_DATA_LENGTH then
-      -- Only pop the first N items off the dataList queue
-      subset = {}
-      for i = 1, MAX_ENCODED_DATA_LENGTH, 1 do
-        subset[i] = dataList[i]
-      end
-      json = sjson.encode(subset)
-      print("Subset is of length "..#subset)
-      numDataPublished = MAX_ENCODED_DATA_LENGTH
-    else
-      -- Send all remaining items from the queue
-      json = sjson.encode(dataList)
-      numDataPublished = #dataList
-    end
-    ok = true -- TODO should get feedback from encoding. Handle Error.
-    if ok then
-      print("sending this data: ")
-      print(json)
-      uploading = true
-      http.post(
-        endpoint,
-        'Content-Type: application/json\r\n',
-        json,
-        onDataSendAck)
-    else
-      print("Failed to encode!!")
-    end
+-- Checks if there are any files to upload, calls sendData with them or disconnects.
+function syncWithInternet()
+  print("syncWithInternet called")
+  local filenames = getFilenames()
+  if #filenames > 0 then
+    currentFilename = filenames[1]
+    local f = file.open(currentFilename)
+    local json = f.read()
+    f.close()
+    sendData(json)
   else
-    print("No new data. Disconnecting from wifi.")
+    -- Consider flushing datalist to a file here. or higher up.
+    print("No more files to upload to the net. Disconnecting from wifi")
     wifiDisconnect()
   end
+end
+
+function sendData(json)
+  print("sendData called")
+  print(json)
+  uploading = true
+  http.post(
+    endpoint,
+    'Content-Type: application/json\r\n',
+    json,
+    onDataSendAck
+  )
 end
 
 function wifiDisconnect()

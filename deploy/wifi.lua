@@ -6,6 +6,7 @@
 
 TIME_SYNC_WAIT_TIME = 5000 -- How long to wait before trying to time sync again, millis
 TIME_SYNC_MAX_ATTEMPTS = 10 -- Max number of attempts before giving up
+WIFI_CONNECT_MAX_ATTEMPTS = 15 -- was 75
 time_sync_count = 0
 disconnect_ct = 0
 WIFI_CONFIG = {
@@ -55,9 +56,7 @@ onWifiDisconnect = function(T)
     --the station has disassociated from a previously connected AP
     return
   end
-  -- total_tries: how many times the station will attempt to connect to the AP. Should consider AP reboot duration.
-  local total_tries = 75
-  
+
   --There are many possible disconnect reasons, the following iterates through
   --the list and returns the string corresponding to the disconnect reason.
   for key,val in pairs(wifi.eventmon.reason) do
@@ -69,9 +68,9 @@ onWifiDisconnect = function(T)
 
  
   disconnect_ct = disconnect_ct + 1
-  if disconnect_ct < total_tries then
-    print("Retrying connection...(attempt "..(disconnect_ct+1).." of "..total_tries..")")
-    tmr.create():alarm(TIME_SYNC_WAIT_TIME, tmr.ALARM_SINGLE, wifi.sta.connect)
+  if disconnect_ct < WIFI_CONNECT_MAX_ATTEMPTS then
+    print("Retrying connection...(attempt "..(disconnect_ct+1).." of "..WIFI_CONNECT_MAX_ATTEMPTS..")")
+    internetDisconnectLED()
   else
     wifi.sta.disconnect()
     print("Aborting connection to AP and resetting count!")
