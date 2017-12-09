@@ -16,3 +16,4 @@ DATA_SAVE_THRESHOLD = 20 -- Might as well make this the same as the maximum JSON
 MAX_ENCODED_DATA_LENGTH = 20 -- Limit the number of datapoints to include in one request so that the JSON string doesn't run out of memory.
 FILE_SAVE_INTERVAL = 15*60*1000 -- Save datalist to file every N minutes (millis)
 WIFI_CONNECT_MAX_ATTEMPTS = 30 -- How many times to try to connect to wifi
+TIME_SAVE_INTERVAL = 11*60*1000 -- How often to save time to file.

@@ -29,9 +29,11 @@ local onIPAssignment = function(T)
 end
 
 local onTimeSyncSuccess = function(T)
-  print("Time Synced!")
+  local newtime = rtctime.get()
+  print("Time Synced! New time is: "..newtime)
   tryingTimeSync = false
   timeSynced = true
+  saveTime() -- function in time.lua to save to file
   onInternetConnect()
 end
 

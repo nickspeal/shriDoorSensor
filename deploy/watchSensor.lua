@@ -27,7 +27,7 @@ end
 
 local function saveData(edge)
   logEvent(edge)
-  if not timeSynced and not SAVE_WITHOUT_KNOWN_TIME then
+  if not fakeTimeSynced and not SAVE_WITHOUT_KNOWN_TIME then
     print("Time is not yet synced. Data will not be saved. Set the flag in credentials to change this behaviour")
     return
   end

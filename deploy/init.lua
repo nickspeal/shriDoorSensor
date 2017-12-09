@@ -10,6 +10,7 @@ dataList = {}
 onInternetConnect = nil -- Function to be defined
 wifiConnected = false
 timeSynced = false
+fakeTimeSynced = false
 
 -- TODO should this be in uploadData? Seems kinda hidden though
 function onInternetConnect()
@@ -19,9 +20,7 @@ function onInternetConnect()
   syncWithInternet() -- defined within uploadData
 end
 
-function startup()
-  local rsec, rusec, rate = rtctime.get()
-  print("start time: "..rsec)  
+function startup()  
   offLED()
   if file.open("init.lua") == nil then
       print("init.lua deleted or renamed. Application will not be run until you restart the device.")
@@ -30,6 +29,8 @@ function startup()
       file.close("init.lua")
       -- Global Configuration
       dofile("credentials.lua")
+      -- Load time from file. Save it periodically
+      dofile("time.lua")
       -- Watch the sensor for door events and save this data:
       dofile("watchSensor.lua")
       -- Save data to file, and provide a function for reading it back:

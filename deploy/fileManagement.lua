@@ -38,11 +38,19 @@ local function popJson()
         subset[i] = dataList[i]
       end
       --ok, json = pcall(sjson.encode, dataList)
-      json = sjson.encode(subset)
+      --json = sjson.encode(subset)
+      jsonList = {}
+      for i, event in pairs(subset) do
+        jsonList[i] = sjson.encode(event)
+      end
       numberOfEventsSaved = #subset
     else
       -- Send all remaining items from the list
-      json = sjson.encode(dataList)
+      --json = sjson.encode(dataList)
+      jsonList = {}
+      for i, event in pairs(dataList) do
+        jsonList[i] = sjson.encode(event)
+      end
       numberOfEventsSaved = #dataList
     end
 
@@ -53,14 +61,15 @@ local function popJson()
     end
     dataList = unsavedData
   end
-  return json
+  return jsonList
 end
 
 -- Find the lowest number for prefix-N.json that doesn't exist yet and write to it.
 function saveFile()
   print("saveFile called")
   local json = popJson() -- TODO maybe this belongs elsewhere, so that two quick events don't call saveFile twice.
-  if json ~= nil then
+  if json ~= nil and #json > 0 then
+    -- Find the lowest available file to write to
     local count = 1
     while true do
       if file.exists(formatFilename(count)) then
@@ -71,8 +80,10 @@ function saveFile()
     end
 
     print("Writing to data file # "..count)
-    local f = file.open(formatFilename(count), 'w')
-    f.write(json)
+    local f = file.open(formatFilename(count), 'w+')
+    for i, event in pairs(json) do
+      f.writeline(event)
+    end
     f.close()
     print("Done writing to file.")
   else

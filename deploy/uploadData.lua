@@ -22,10 +22,20 @@ function syncWithInternet()
   print("syncWithInternet called")
   currentFilename = getADataFilename()
   if currentFilename ~= nil then
+    -- Read multiline json file and encode it into one string to call sendData with.
     local f = file.open(currentFilename)
-    local json = f.read()
+    local jsonString = "["
+    local nextLine = f.readline()
+    while nextLine ~= nil do
+      jsonString = jsonString..nextLine
+      nextLine = f.readline() -- This seems to include a newline character at the end of each line, but the API doesn't mind.
+      if nextLine ~= nil then
+        jsonString = jsonString..", "
+      end
+    end
+    jsonString = jsonString.."]"
     f.close()
-    sendData(json)
+    sendData(jsonString)
   else
     -- Consider flushing datalist to a file here. or higher up.
     print("No more files to upload to the net. Disconnecting from wifi")
