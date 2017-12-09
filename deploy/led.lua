@@ -7,8 +7,8 @@
 gpio.mode(0, gpio.OUTPUT)
 gpio.write(0, gpio.HIGH)
 
-LED_PIN = 0
-STEADY_STATE_ON = false -- WIP state maintenance logic isn't quite right yet. WIP. For now assume previousState was always false (off)
+local LED_PIN = 0
+local STEADY_STATE_ON = false -- WIP state maintenance logic isn't quite right yet. WIP. For now assume previousState was always false (off)
 
 
 function onLED()

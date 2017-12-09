@@ -15,11 +15,17 @@
 --     Wacky order could come from stack style where low numbers are read first and written first
 --     Maybe could loop through list of files in reverse order, to mostly, but not perfectly, sovle the problem
 
-FILENAME_PREFIX = "saveddata-"
-FILENAME_EXTENSION = ".json"
+local FILENAME_PREFIX = "saveddata-"
+local FILENAME_EXTENSION = ".json"
+recentFileIndex = 0 -- Keep track of the file which was most recently read. Chances are the next one is the next one.
+local maxFileIndex = 200 -- starting assumption for what the highest file index might be
+
+function formatFilename(number)
+  return FILENAME_PREFIX..number..FILENAME_EXTENSION
+end
 
 -- Pop the first N items of the datalist list, encode them as a json string, and return it.
-function popJson()
+local function popJson()
   local json = nil
   local subset = {}
   local numberOfEventsSaved
@@ -57,15 +63,15 @@ function saveFile()
   if json ~= nil then
     local count = 1
     while true do
-      if file.exists(FILENAME_PREFIX..count..FILENAME_EXTENSION) then
+      if file.exists(formatFilename(count)) then
         count = count + 1
       else
         break
       end
     end
 
-    print("Count for first non-existent file is: "..count)
-    local f = file.open(FILENAME_PREFIX..count..FILENAME_EXTENSION, 'w')
+    print("Writing to data file # "..count)
+    local f = file.open(formatFilename(count), 'w')
     f.write(json)
     f.close()
     print("Done writing to file.")
@@ -74,16 +80,40 @@ function saveFile()
   end
 end
 
--- Checks the filesystem and returns a list of filenames matching data files.
-function getFilenames()
-  print("Searching for data files...")
-  local filenames = {}
-  for filename in pairs(file.list()) do
+-- Checks the filesystem and returns an arbitarily selected filename for a datafile
+-- From a memory optimization perspective, first try to loop through the numbers and return those filenames
+-- Then if nothing is found, only then check the file list. This avoids saving a huge list to memory, which is crashy.
+function getADataFilename()
+  -- TODO test and see how long it takes to check if N files exist.
+  -- local rsec, rusec, rate = rtctime.get()
+  -- print("About to loop, time: "..rsec)
+  -- This loop takes 9 seconds per 100 files. Tradeoff time vs crashing. Larger loop takes more time for an empty filesystem, but less likely to crash
+  
+  if file.exists(formatFilename(recentFileIndex + 1)) then
+    recentFileIndex = recentFileIndex + 1
+    return formatFilename(recentFileIndex)
+  end
+
+  -- WARNING - THIS BLOCKS FOR MANY SECONDS, DOESNT ALLOW SENSOR SAMPLES!
+  -- Check every STEP files, (5), to speed up the check and skip over gaps. The first check catches sequences and the last check catches anything missing
+  for i = 1, maxFileIndex, 5 do
+    if file.exists(formatFilename(i)) then
+     recentFileIndex = i
+     return formatFilename(i)
+   end
+  end
+  -- rsec, rusec, rate = rtctime.get()
+  -- print("looped. Time: "..rsec)
+  print("Looped through all the numbers and didn't find any files. Checking file list for stragglers.")
+
+  for filename, size in pairs(file.list()) do
     if string.find(filename, FILENAME_PREFIX) then
-      filenames[#filenames + 1] = filename
+      print("Found a stragler! "..filename)
+      return filename
     end
   end
-  return filenames
+  print("Done with 2 loops and no data files found. Returning nil")
+  return nil
 end
 
 -- saveFile is called whenever the dataList fills up, but also periodically here to avoid data loss of a partial datalist during a power cycle

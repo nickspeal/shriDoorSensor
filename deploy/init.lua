@@ -20,22 +20,23 @@ function onInternetConnect()
 end
 
 function startup()
-    offLED()
-    if file.open("init.lua") == nil then
-        print("init.lua deleted or renamed. Application will not be run until you restart the device.")
-    else
-        print("Running")
-        file.close("init.lua")
-        -- Global Configuration
-        dofile("credentials.lua")
-        -- Watch the sensor for door events and save this data:
-        dofile("watchSensor.lua")
-        -- Save data to file, and provide a function for reading it back:
-        dofile("fileManagement.lua")
-        -- Periodically upload the data to the internet (and ping also?)
-        dofile("wifi.lua")
-        dofile("uploadData.lua")
-
+  local rsec, rusec, rate = rtctime.get()
+  print("start time: "..rsec)  
+  offLED()
+  if file.open("init.lua") == nil then
+      print("init.lua deleted or renamed. Application will not be run until you restart the device.")
+  else
+      print("Running")
+      file.close("init.lua")
+      -- Global Configuration
+      dofile("credentials.lua")
+      -- Watch the sensor for door events and save this data:
+      dofile("watchSensor.lua")
+      -- Save data to file, and provide a function for reading it back:
+      dofile("fileManagement.lua")
+      -- Periodically upload the data to the internet (and ping also?)
+      dofile("wifi.lua")
+      dofile("uploadData.lua")
     end
 end
 

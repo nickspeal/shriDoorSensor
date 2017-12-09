@@ -1,52 +1,27 @@
 --
   -- Uploads data to ubidots and disconnects from wifi. Assumes wifi is connected.
   -- Depends on global variables:
-  -- wifiConnected, SENSOR_ID
+  -- wifiConnected, SENSOR_ID, MAX_UPLOAD_ATTEMPTS, wifiDisconnect, getADataFilename
 --
 
-
-numDataPublished = 0
-uploading = false -- don't try a subsequent upload if already uploading. Instead continue to buffer and send after.
-MAX_UPLOAD_ATTEMPTS = 10
-upload_trial_count = 0
-MAX_ENCODED_DATA_LENGTH = 6 -- Limit the number of datapoints to include in one request so that the JSON string doesn't run out of memory.
 currentFilename = nil
 
 --UBIDOTS
-TOKEN="A1E-VPavGWA9IgLsNgRPJ5zOUkuOvWp67j" -- TODO regenerate and keep out of public github!
-LABEL_DEVICE=SENSOR_ID --defined in credentials
-LABEL_VARIABLE="state"
-endpoint = string.format(
+local TOKEN="A1E-VPavGWA9IgLsNgRPJ5zOUkuOvWp67j" -- TODO regenerate and keep out of public github!
+local LABEL_DEVICE=SENSOR_ID --defined in credentials
+local LABEL_VARIABLE="state"
+local endpoint = string.format(
   "http://things.ubidots.com/api/v1.6/devices/%s/%s/values/?token=%s", 
   LABEL_DEVICE,
   LABEL_VARIABLE,
   TOKEN
 )
 
-function onDataSendAck(code, data)
-  if code == 200 then
-    print("Data Upload Successful. Deleting file "..currentFilename)
-    upload_trial_count = 0
-    if currentFilename ~= nil then
-      file.remove(currentFilename)
-    end
-    syncWithInternet()
-  else
-    print("HTTP request failed ", code, data)
-    upload_trial_count = upload_trial_count + 1
-    if upload_trial_count < MAX_UPLOAD_ATTEMPTS then
-      print("Trying again. Attempt #"..upload_trial_count.." of "..MAX_UPLOAD_ATTEMPTS)
-      syncWithInternet()
-    end
-  end
-end
-
 -- Checks if there are any files to upload, calls sendData with them or disconnects.
 function syncWithInternet()
   print("syncWithInternet called")
-  local filenames = getFilenames()
-  if #filenames > 0 then
-    currentFilename = filenames[1]
+  currentFilename = getADataFilename()
+  if currentFilename ~= nil then
     local f = file.open(currentFilename)
     local json = f.read()
     f.close()
@@ -61,16 +36,28 @@ end
 function sendData(json)
   print("sendData called")
   print(json)
-  uploading = true
+  local headers = 'Host: things.ubidots.com\r\nContent-Type: application/json\r\n'
+
   http.post(
     endpoint,
-    'Content-Type: application/json\r\n',
+    headers,
     json,
     onDataSendAck
   )
 end
 
-function wifiDisconnect()
-  wifi.sta.disconnect()
-  wifi.setmode(wifi.NULLMODE) -- low power mode
+function onDataSendAck(code, data)
+  if code == 200 then
+    print("Data Upload Successful. Deleting file "..currentFilename)
+    if currentFilename ~= nil then
+      file.remove(currentFilename)
+    end
+    syncWithInternet()
+  else
+    print("HTTP request failed. Error code "..code..", and data: ", data)
+    -- Keep trying until the wifi is disconnected. (Presumably the user would turn off the hotspot at some point.)
+    if wifiConnected then
+      syncWithInternet()
+    end
+  end
 end

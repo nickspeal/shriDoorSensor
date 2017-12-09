@@ -4,42 +4,38 @@
   -- onInternetConnect, WIFI_SLEEP_TIME, wifiConnected, WIFI_CONNECT_MAX_ATTEMPTS
 --
 
-TIME_SYNC_WAIT_TIME = 5000 -- How long to wait before trying to time sync again, millis
-TIME_SYNC_MAX_ATTEMPTS = 10 -- Max number of attempts before giving up
-time_sync_count = 0
-disconnect_ct = 0
-WIFI_CONFIG = {
+local TIME_SYNC_WAIT_TIME = 5000 -- How long to wait before trying to time sync again, millis
+local TIME_SYNC_MAX_ATTEMPTS = 10 -- Max number of attempts before giving up
+local time_sync_count = 0
+local disconnect_ct = 0
+local WIFI_CONFIG = {
   ssid=SSID,
   pwd=PASSWORD,
   save=false,
 }
-tryingTimeSync = false
+local tryingTimeSync = false
 
 -- Define WiFi station event callbacks
-onWifiConnect = function(T)
-  print("Connection to AP("..T.SSID..") established!")
-  print("Waiting for IP address...")
+local onWifiConnect = function(T)
+  print("Connection to AP("..T.SSID..") established! Waiting for IP address...")
   disconnect_ct = 0
 end
 
-onIPAssignment = function(T)
+local onIPAssignment = function(T)
   -- Note: Having an IP address does not mean there is internet access!
-  -- Internet connectivity can be determined with net.dns.resolve().
-  print("IP address is: "..T.IP)
-  print("Waiting for Internet connectivity and NTP Time...")
+  print("IP address is: "..T.IP..". Waiting for Internet connectivity and NTP Time...")
   time_sync_count = 0
   tryTimeSync()
 end
 
-onTimeSyncSuccess = function(T)
+local onTimeSyncSuccess = function(T)
   print("Time Synced!")
-  timeSynced = true
   tryingTimeSync = false
+  timeSynced = true
   onInternetConnect()
 end
 
-
-onTimeSyncFail = function(T)
+local onTimeSyncFail = function(T)
   time_sync_count = time_sync_count + 1
   print('Time Sync Failure #'..time_sync_count)
   tryingTimeSync = false
@@ -47,7 +43,7 @@ onTimeSyncFail = function(T)
   tmr.create():alarm(TIME_SYNC_WAIT_TIME, tmr.ALARM_SINGLE, tryTimeSync)
 end
 
-onWifiDisconnect = function(T)
+local onWifiDisconnect = function(T)
   print("\nDisconnected from WiFi with SSID: "..T.SSID)
   internetDisconnectLED()
   wifiConnected = false
@@ -65,42 +61,52 @@ onWifiDisconnect = function(T)
       break
     end
   end
-
  
   disconnect_ct = disconnect_ct + 1
   if disconnect_ct < WIFI_CONNECT_MAX_ATTEMPTS then
     print("Retrying connection...(attempt "..(disconnect_ct+1).." of "..WIFI_CONNECT_MAX_ATTEMPTS..")")
   else
-    wifi.sta.disconnect()
-    print("Aborting connection to AP and resetting count!")
+    print("Aborting connection to AP and resetting count")
+    wifiDisconnect()
     disconnect_ct = 0
   end
 end
 
 function tryTimeSync()
   if time_sync_count < TIME_SYNC_MAX_ATTEMPTS then
+    -- If a timeSyncRequest is currently pending, try again later.
     if not tryingTimeSync then
-      tryingTimeSync = true
-      sntp.sync("pool.ntp.org", onTimeSyncSuccess, onTimeSyncFail, nil)
+      -- Make sure we are still connected to the AP while repeatedly trying to time sync.
+      if wifi.sta.getip() ~= nil then
+        tryingTimeSync = true
+        sntp.sync("pool.ntp.org", onTimeSyncSuccess, onTimeSyncFail, nil)
+      end
     else
       tmr.create():alarm(TIME_SYNC_WAIT_TIME, tmr.ALARM_SINGLE, tryTimeSync)
     end
   else
-    print("Time Sync Max Attempts Exceeded: "..time_sync_count)
+    -- TODO is this good enough? Does onWifiConnect get called after this?
+    print("Time Sync Max Attempts Exceeded: "..time_sync_count..". Attempting to connect to wifi again")
+    time_sync_count = 0
+    connectToWifi()
   end
 end
 
 function connectToWifi()
   if wifiConnected then
-    print("connectToWifi called but Wifi is already connected.")
-  else
-    print("Connecting to WiFi access point "..SSID.."...")
-    -- wifi.sta.disconnect() -- is this needed?
-    wifi.setmode(wifi.STATION)
-    wifi.sta.autoconnect(0) -- Disable autoconnecting. I want power control.
-    wifi.sta.config(WIFI_CONFIG)
-    wifi.sta.connect()
+    print("connectToWifi called but Wifi is already connected. Trying anyway...")
   end
+  print("Connecting to WiFi access point "..SSID.."...")
+  -- wifi.sta.disconnect() -- is this needed?
+  wifi.setmode(wifi.STATION)
+  wifi.sta.autoconnect(0) -- Disable autoconnecting. I want power control.
+  wifi.sta.config(WIFI_CONFIG)
+  wifi.sta.connect()
+end
+
+function wifiDisconnect()
+  wifi.sta.disconnect()
+  wifi.setmode(wifi.NULLMODE) -- low power mode
 end
 
 -- Register WiFi Station event callbacks
