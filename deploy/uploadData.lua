@@ -7,15 +7,23 @@
 currentFilename = nil
 
 --UBIDOTS
-local TOKEN="A1E-VPavGWA9IgLsNgRPJ5zOUkuOvWp67j" -- TODO regenerate and keep out of public github!
+local TOKEN=UBIDOTS_TOKEN
 local LABEL_DEVICE=SENSOR_ID --defined in credentials
 local LABEL_VARIABLE="state"
+local LABEL_VARIABLE_COMPLETE="complete"
 local endpoint = string.format(
   "http://things.ubidots.com/api/v1.6/devices/%s/%s/values/?token=%s", 
   LABEL_DEVICE,
   LABEL_VARIABLE,
   TOKEN
 )
+local endpoint_complete = string.format(
+  "http://things.ubidots.com/api/v1.6/devices/%s/%s/values/?token=%s", 
+  LABEL_DEVICE,
+  LABEL_VARIABLE_COMPLETE,
+  TOKEN
+)
+local headers = 'Host: things.ubidots.com\r\nContent-Type: application/json\r\n'
 
 -- Checks if there are any files to upload, calls sendData with them or disconnects.
 function syncWithInternet()
@@ -38,15 +46,14 @@ function syncWithInternet()
     sendData(jsonString)
   else
     -- Consider flushing datalist to a file here. or higher up.
-    print("No more files to upload to the net. Disconnecting from wifi")
-    wifiDisconnect()
+    print("No more files to upload to the net. Sending an upload complete message")
+    sendUploadComplete()
   end
 end
 
 function sendData(json)
   print("sendData called")
   print(json)
-  local headers = 'Host: things.ubidots.com\r\nContent-Type: application/json\r\n'
 
   http.post(
     endpoint,
@@ -56,8 +63,24 @@ function sendData(json)
   )
 end
 
+function sendUploadComplete()
+  print("sendUploadComplete called")
+  local rsec, rusec, rate = rtctime.get()
+  local time = rsec*1000 + math.floor((rusec/1000) + 0.5)
+  local json = '{"value":1,"timestamp":'..time..'}'
+  print(json)
+
+  http.post(
+    endpoint_complete,
+    headers,
+    json,
+    onDataUploadCompleteAck
+  )
+end
+
+
 function onDataSendAck(code, data)
-  if code == 200 then
+  if code == 200 or code == 201 then
     print("Data Upload Successful. Deleting file "..currentFilename)
     if currentFilename ~= nil then
       file.remove(currentFilename)
@@ -65,6 +88,19 @@ function onDataSendAck(code, data)
     syncWithInternet()
   else
     print("HTTP request failed. Error code "..code..", and data: ", data)
+    -- Keep trying until the wifi is disconnected. (Presumably the user would turn off the hotspot at some point.)
+    if wifiConnected then
+      syncWithInternet()
+    end
+  end
+end
+
+function onDataUploadCompleteAck(code, data)
+  if code == 200 or code == 201 then
+    print("Upload Complete Message Sent. Disconnecting From Wifi.")
+    wifiDisconnect()
+  else
+    print("upload complete HTTP request failed. Error code "..code..", and data: ", data)
     -- Keep trying until the wifi is disconnected. (Presumably the user would turn off the hotspot at some point.)
     if wifiConnected then
       syncWithInternet()

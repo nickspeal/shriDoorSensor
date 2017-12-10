@@ -21,7 +21,7 @@ end
 
 function saveTime()
   local secondsFromEpoch = rtctime.get()
-  local f = file.open(TIME_FILE, 'w')
+  local f = file.open(TIME_FILE, 'w+')
   f.write(secondsFromEpoch)
   f.close()
   print("Saved time to file "..secondsFromEpoch)

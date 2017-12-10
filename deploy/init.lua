@@ -29,6 +29,7 @@ function startup()
       file.close("init.lua")
       -- Global Configuration
       dofile("credentials.lua")
+      dofile("settings.lua")
       -- Load time from file. Save it periodically
       dofile("time.lua")
       -- Watch the sensor for door events and save this data:

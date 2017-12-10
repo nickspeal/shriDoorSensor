@@ -26,6 +26,7 @@ function blinkLED(duration, repeatCount)
     tmr.create():alarm((2 * i - 1) * duration, tmr.ALARM_SINGLE, onLED)
     tmr.create():alarm(2 * i * duration, tmr.ALARM_SINGLE, offLED)
   end
+  -- TODO there is an edge case here if a blink happens surrounding the tail edge of a steady state time. Steady State will not change till the next blink
   if STEADY_STATE_ON then
     tmr.create():alarm(2 * repeatCount * duration, tmr.ALARM_SINGLE, onLED)
   else
