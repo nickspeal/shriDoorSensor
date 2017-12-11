@@ -17,6 +17,7 @@ function onInternetConnect()
   print("Internet is connected!!")
   internetConnectedLED()
   wifiConnected = true
+  saveFile()
   syncWithInternet() -- defined within uploadData
 end
 

@@ -1,7 +1,7 @@
 --
   -- File Management: Witing and Reading
   -- Depends on global variables:
-  -- dataList, MAX_ENCODED_DATA_LENGTH, FILE_SAVE_INTERVAL
+  -- dataList, MAX_ENCODED_DATA_LENGTH, FILE_SAVE_INTERVAL, MAX_FILES
 --
 
 -- datstructure 1b
@@ -18,7 +18,7 @@
 local FILENAME_PREFIX = "saveddata-"
 local FILENAME_EXTENSION = ".json"
 recentFileIndex = 0 -- Keep track of the file which was most recently read. Chances are the next one is the next one.
-local maxFileIndex = 200 -- starting assumption for what the highest file index might be
+nextFileToWrite = 1 -- Keep track of the next file to write to. 
 
 function formatFilename(number)
   return FILENAME_PREFIX..number..FILENAME_EXTENSION
@@ -69,26 +69,42 @@ function saveFile()
   print("saveFile called")
   local json = popJson() -- TODO maybe this belongs elsewhere, so that two quick events don't call saveFile twice.
   if json ~= nil and #json > 0 then
-    -- Find the lowest available file to write to
-    local count = 1
-    while true do
-      if file.exists(formatFilename(count)) then
-        count = count + 1
-      else
-        break
+    local fileIndex = pickEmptyFileToWrite()
+    if fileIndex ~= nil then
+      print("Writing to data file # "..fileIndex)
+      local f = file.open(formatFilename(fileIndex), 'w+')
+      for i, event in pairs(json) do
+        f.writeline(event)
       end
+      f.close()
+      nextFileToWrite = fileIndex + 1
+      print("Done writing to file.")
+    else
+      print("No available file to write to. Not saving.")
     end
-
-    print("Writing to data file # "..count)
-    local f = file.open(formatFilename(count), 'w+')
-    for i, event in pairs(json) do
-      f.writeline(event)
-    end
-    f.close()
-    print("Done writing to file.")
   else
     print("No JSON was found. Nothing to save.")
   end
+end
+
+-- Find the lowest available file to write to
+function pickEmptyFileToWrite()
+  -- First, keep track of state and count on that to avoid looping
+  if not file.exists(formatFilename(nextFileToWrite)) then
+    return nextFileToWrite
+  end
+  -- Try the file that was most recently read. It might have been deleted.
+  if not file.exists(formatFilename(recentFileIndex)) then
+    return nextFileToWrite
+  end
+  -- If all that fails, then do this blocking loop (9 sec / 100 files) to search.
+  for i = 1, MAX_FILES, 1 do
+    if not file.exists(formatFilename(i)) then
+      return i
+    end
+  end
+  -- If no empty files are found, then there is no room to save.
+  return nil
 end
 
 -- Checks the filesystem and returns an arbitarily selected filename for a datafile
@@ -106,8 +122,15 @@ function getADataFilename()
   end
 
   -- WARNING - THIS BLOCKS FOR MANY SECONDS, DOESNT ALLOW SENSOR SAMPLES!
-  -- Check every STEP files, (5), to speed up the check and skip over gaps. The first check catches sequences and the last check catches anything missing
-  for i = 1, maxFileIndex, 5 do
+  -- Check every STEP files, (25), to speed up the check and skip over gaps. The first check catches sequences and the last check catches anything missing
+  for i = 1, 100, 10 do
+    if file.exists(formatFilename(i)) then
+     recentFileIndex = i
+     return formatFilename(i)
+   end
+  end  
+
+  for i = 101, MAX_FILES, 25 do
     if file.exists(formatFilename(i)) then
      recentFileIndex = i
      return formatFilename(i)
