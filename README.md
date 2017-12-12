@@ -21,3 +21,10 @@ Install Software
 * Once connected to wifi, the LED will go dark
 * Once connected to Internet (This takes about 10 or 20 seconds after Wifi), the LED will go solid ON until it disconnects.
 * Each time the door opens or closes, the LED will double-blink.
+
+# Post Processing
+
+* Use Python v2.7
+* Make sure you create a file called TOKEN in the processing directory, with the ubidots access token. You can find this token at https://app.ubidots.com/userdata/api/
+* It's intentionally ignored from git. Please don't commit the token!
+* From the processing directory, run this command to fetch remote data and save to file/: `python fetchData.py`
