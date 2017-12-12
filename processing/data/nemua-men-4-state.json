@@ -1,7 +1,10 @@
-{"timestamp": 1513050434020, "created_at": 1513054323861, "value": 1.0, "context": {"eventId": 3, "timeSynced": false}}
-{"timestamp": 1513050433020, "created_at": 1513054323452, "value": 0.0, "context": {"eventId": 2, "timeSynced": false}}
-{"timestamp": 1513050430320, "created_at": 1513054322988, "value": 1.0, "context": {"eventId": 1, "timeSynced": false}}
-{"timestamp": 1513050429423, "created_at": 1513054321974, "value": 0.0, "context": {"eventId": 0, "timeSynced": false}}
+{"timestamp": 1513079513245, "created_at": 1513083646277, "value": 1.0, "context": {"eventId": 2, "timeSynced": false}}
+{"timestamp": 1513079512345, "created_at": 1513083646258, "value": 0.0, "context": {"eventId": 1, "timeSynced": false}}
+{"timestamp": 1513073608721, "created_at": 1513083653356, "value": 1.0, "context": {"eventId": 0, "timeSynced": false}}
+{"timestamp": 1513050434020, "created_at": 1513083673105, "value": 1.0, "context": {"eventId": 3, "timeSynced": false}}
+{"timestamp": 1513050433020, "created_at": 1513083673119, "value": 0.0, "context": {"eventId": 2, "timeSynced": false}}
+{"timestamp": 1513050430320, "created_at": 1513083673044, "value": 1.0, "context": {"eventId": 1, "timeSynced": false}}
+{"timestamp": 1513050429423, "created_at": 1513083672956, "value": 0.0, "context": {"eventId": 0, "timeSynced": false}}
 {"timestamp": 1512923040895, "created_at": 1512974572784, "value": 1.0, "context": {"eventId": 8, "timeSynced": false}}
 {"timestamp": 1512922847989, "created_at": 1512974566654, "value": 0.0, "context": {"eventId": 7, "timeSynced": false}}
 {"timestamp": 1512922844389, "created_at": 1512974566594, "value": 1.0, "context": {"eventId": 6, "timeSynced": false}}
