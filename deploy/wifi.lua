@@ -103,7 +103,7 @@ function connectToWifi()
   wifi.setmode(wifi.STATION)
   wifi.sta.autoconnect(0) -- Disable autoconnecting. I want power control.
   wifi.sta.config(WIFI_CONFIG)
-  wifi.sethostname(SENSOR_ID) -- name of this device as it shows up on the cell phone
+  wifi.sta.sethostname(SENSOR_ID) -- name of this device as it shows up on the cell phone
   wifi.sta.connect()
 end
 
