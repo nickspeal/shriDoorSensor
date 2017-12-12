@@ -1,0 +1,58 @@
+Door Sensor Notes
+
+
+How to view the data
+  This is temprary. I will work on a website to view the data when I get home, but this is what we need to do for the first month.
+  First Setup:
+    open the program Git Bash
+    type cd /c/doorsensor/shriDoorSensor/processing
+  (Optional) Check if Nick has made any changes to the processing software
+    type git pull
+  Load the data from Internet onto the laptop
+    python fetchData.py
+  View the data
+    python intervalTable.py 1
+    You can access the previous command by pressing the UP arrow on the keyboard.
+    Change the last number for each door (1 to 8)
+
+  Quick Steps:
+    1. git bash
+    2. cd /c/doorsensor/shriDoorSensor/processing
+    3. python fetchData.py
+    4. python intervalTable.py 1
+
+  To See the data online:
+    go to ubidots.com
+    user: shri
+    password: sanrights
+    Click devices
+---------------------------------------------------------------------
+
+If there is a new Computer, email Nick for instructions. Temporary instructions are in Google Drive.
+
+---------------------------------------------------------------------
+
+If there is a software problem and we need to install new software on the devices:
+  Download the new software that Nick writes onto this computer
+    open Git Bash
+    type: cd /c/doorsensor/shriDoorSensor
+    type git pull
+  Plug in each device to the laptop over USB
+  Open ESP Cut
+  Restart the device with the Red button in ESP Cut
+  delete the "init.lua" file on the left (right click it, delete)
+  Restart the device with the Red button in ESP Cut
+  Select all the files in this folder: c:\doorsensor\shriDoorSensor\deploy and copy those to the device
+  There is also a file in c:\doorsensor called credentials.lua, which can be uploaded to the devices, with a different name for each
+
+---------------------------------------------------------------------
+
+Make sure to connect the devices to Wifi daily
+  If they collect data for too long without uploading, they might crash.
+  Go to the site with a phone and turn on the wifi tethering hotspot feature. Make sure mobile data is turned on.
+  The name must be AndroidAP and password must be sanrights
+  You should see each device connect to the phone after 5 minutes.
+  They disconnect when upload is complete.
+  Leave the wifi network ON until all the devices have disconnected.
+  This could take a long time: 30 minutes or more. Not sure. A phone with a faster internet connection will be faster.
+
